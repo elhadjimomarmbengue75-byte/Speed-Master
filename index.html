@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Master</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #080d18;
+  color: white;
+  text-align: center;
+}
+
+header {
+  padding: 30px 15px;
+  background: linear-gradient(135deg, #101d38, #080d18);
+}
+
+h1 {
+  font-size: 38px;
+  color: #00d9ff;
+  font-style: italic;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  color: #aaa;
+  margin-top: 10px;
+}
+
+.car {
+  font-size: 100px;
+  margin: 45px 0 25px;
+}
+
+h2 {
+  font-size: 25px;
+  margin-bottom: 12px;
+}
+
+.description {
+  color: #aaa;
+  padding: 0 25px;
+  line-height: 1.6;
+}
+
+button {
+  display: block;
+  width: 80%;
+  max-width: 300px;
+  margin: 25px auto;
+  padding: 17px;
+  border: none;
+  border-radius: 12px;
+  background: #00d9ff;
+  color: #080d18;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+footer {
+  margin-top: 50px;
+  padding: 20px;
+  color: #666;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>SPEED MASTER</h1>
+  <p class="subtitle">THE ULTIMATE RACING GAME</p>
+</header>
+
+<div class="car">🏎️</div>
+
+<h2>PRÊT À COURIR ?</h2>
+
+<p class="description">
+  Prépare-toi pour une expérience de course automobile
+  exceptionnelle !
+</p>
+
+<button onclick="startGame()">JOUER</button>
+
+<button onclick="showGarage()">GARAGE</button>
+
+<footer>
+  SPEED MASTER © 2026
+</footer>
+
+<script>
+function startGame() {
+  alert("Bienvenue dans Speed Master !");
+}
+
+function showGarage() {
+  alert("Le garage arrive bientôt !");
+}
+</script>
+
+</body>
+</html>

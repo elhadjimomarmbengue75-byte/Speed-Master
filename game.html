@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speed Master - Racing</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #080d18;
+  color: white;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+#hud {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 10;
+  font-weight: bold;
+  font-size: 17px;
+}
+
+#game {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+#controls {
+  position: absolute;
+  bottom: 25px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  z-index: 10;
+}
+
+button {
+  background: #00d9ff;
+  color: #06101b;
+  border: none;
+  border-radius: 15px;
+  padding: 17px 25px;
+  font-size: 18px;
+  font-weight: bold;
+  touch-action: none;
+}
+
+#message {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  z-index: 20;
+  font-size: 25px;
+  font-weight: bold;
+  pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+  <div>🏎️ SPEED MASTER</div>
+  <div>Vitesse : <span id="speed">0</span> km/h</div>
+  <div>Score : <span id="score">0</span></div>
+</div>
+
+<div id="message">PRÊT ?</div>
+
+<canvas id="game"></canvas>
+
+<div id="controls">
+  <button id="left">◀</button>
+  <button id="brake">FREIN</button>
+  <button id="right">▶</button>
+  <button id="gas">ACCÉLÉRER</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+let carX = 0;
+let speed = 0;
+let score = 0;
+let obstacles = [];
+let roadLines = [];
+let running = true;
+
+let left = false;
+let right = false;
+let gas = false;
+let brake = false;
+
+function control(id, setter) {
+  const btn = document.getElementById(id);
+
+  btn.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    setter(true);
+  });
+
+  btn.addEventListener("pointerup", () => setter(false));
+  btn.addEventListener("pointerleave", () => setter(false));
+  btn.addEventListener("pointercancel", () => setter(false));
+}
+
+control("left", v => left = v);
+control("right", v => right = v);
+control("gas", v => gas = v);
+control("brake", v => brake = v);
+
+function drawRoad() {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.fillStyle = "#287a32";
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = "#333944";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.34, h);
+  ctx.lineTo(w * 0.46, h * 0.18);
+  ctx.lineTo(w * 0.54, h * 0.18);
+  ctx.lineTo(w * 0.66, h);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.34, h);
+  ctx.lineTo(w * 0.46, h * 0.18);
+  ctx.moveTo(w * 0.66, h);
+  ctx.lineTo(w * 0.54, h * 0.18);
+  ctx.stroke();
+
+  for (let i = 0; i < 10; i++) {
+    let y = ((i * 100 + score * 2) % h);
+    let width = 2 + y / h * 4;
+
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(w / 2 - width / 2, y, width, 25);
+  }
+}
+
+function drawCar(x, y, scale = 1, color = "#00d9ff") {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "#111";
+  ctx.fillRect(-27, 10, 12, 35);
+  ctx.fillRect(15, 10, 12, 35);
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(-22, 40);
+  ctx.lineTo(-19, 0);
+  ctx.lineTo(-10, -25);
+  ctx.lineTo(10, -25);
+  ctx.lineTo(19, 0);
+  ctx.lineTo(22, 40);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "#bdefff";
+  ctx.fillRect(-12, -17, 24, 15);
+
+  ctx.fillStyle = "#ff3333";
+  ctx.fillRect(-18, 30, 8, 6);
+  ctx.fillRect(10, 30, 8, 6);
+
+  ctx.restore();
+}
+
+function createObstacle() {
+  const lane = Math.random() * 2 - 1;
+  obstacles.push({
+    x: canvas.width / 2 + lane * canvas.width * 0.12,
+    y: -50
+  });
+}
+
+function update() {
+  if (!running) return;
+
+  if (gas) speed = Math.min(speed + 0.4, 220);
+  else speed = Math.max(speed - 0.12, 0);
+
+  if (brake) speed = Math.max(speed - 1.5, 0);
+
+  if (left) carX -= 5;
+  if (right) carX += 5;
+
+  carX = Math.max(-canvas.width * 0.13,
+    Math.min(canvas.width * 0.13, carX));
+
+  if (Math.random() < 0.025) createObstacle();
+
+  obstacles.forEach(ob => {
+    ob.y += 3 + speed * 0.035;
+  });
+
+  obstacles = obstacles.filter(ob => {
+    if (ob.y > canvas.height + 50) {
+      score += 10;
+      return false;
+    }
+
+    const playerX = canvas.width / 2 + carX;
+    const playerY = canvas.height * 0.82;
+
+    if (
+      Math.abs(ob.x - playerX) < 40 &&
+      Math.abs(ob.y - playerY) < 50
+    ) {
+      running = false;
+      document.getElementById("message").innerText =
+        "COURSE TERMINÉE !";
+    }
+
+    return true;
+  });
+
+  document.getElementById("speed").innerText =
+    Math.round(speed);
+  document.getElementById("score").innerText = score;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawRoad();
+
+  obstacles.forEach(ob => {
+    drawCar(ob.x, ob.y, 0.7, "#ff3333");
+  });
+
+  drawCar(
+    canvas.width / 2 + carX,
+    canvas.height * 0.82,
+    1.3
+  );
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
